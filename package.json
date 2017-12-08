@@ -1,0 +1,29 @@
+{
+  "name": "aubit",
+  "version": "0.0.1",
+  "description": "tba",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/dead-bird/aubit.git"
+  },
+  "keywords": [
+    "terminal",
+    "ascii",
+    "art",
+    "music"
+  ],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/dead-bird/aubit/issues"
+  },
+  "homepage": "https://github.com/dead-bird/aubit#readme",
+  "dependencies": {
+    "blessed": "^0.1.81",
+    "blessed-contrib": "^4.8.5"
+  }
+}
