@@ -24,6 +24,7 @@
   "homepage": "https://github.com/dead-bird/aubit#readme",
   "dependencies": {
     "blessed": "^0.1.81",
-    "blessed-contrib": "^4.8.5"
+    "blessed-contrib": "^4.8.5",
+    "dotenv": "^4.0.0"
   }
 }

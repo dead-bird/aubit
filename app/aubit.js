@@ -1,6 +1,9 @@
+require('dotenv').config();
+
 let blessed = require('blessed'),
     contrib = require('blessed-contrib'), // not in use yet
-    screen = blessed.screen();
+    screen = blessed.screen(),
+    env = process.env;
 
 let ascii = `
 mmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmdddmmmmmmmmmmmmm
