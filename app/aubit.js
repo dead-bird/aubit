@@ -3,19 +3,45 @@ require('dotenv').config();
 let fs = require('fs'),
     blessed = require('blessed'),
     contrib = require('blessed-contrib'), // not in use yet
-    screen = blessed.screen(),
+    axios = require('axios'),
+    // screen = blessed.screen(),
     env = process.env,
     file = './app/conf.json',
-    conf = {user:'', access:'', refresh:''},
-    arg = process.argv.slice(2);
+    conf = {access:'', refresh:''},
+    arg = process.argv.slice(2)[0],
+    base = 'https://accounts.spotify.com/api';
 
 if (arg) {
-  auth()
+  auth(arg);
 }
 
-function auth() {
-  console.log(`https://accounts.spotify.com/en/authorize?response_type=code&client_id=${env.CLIENT}&redirect_uri=${env.REDIRECT}&scope=${env.SCOPE}`);
+function auth(code) {
+  axios.get(`${base}/token`, {
+      params: {
+        code: code,
+        redirect_uri: env.REDIRECT,
+        grant_type: 'authorization_code'
+      },
+      headers: {
+        'Authorization': 'Basic ' + (new Buffer(`${env.CLIENT}:${env.SECRET}`).toString('base64'))
+      },
+    })
+    .then(function(res) {
+      console.log(res);
+    })
+    .catch(function(err) {
+      console.log(err);
+    })
 }
+
+
+
+
+
+
+
+
+
 
 // if (conf.user) {
 //   run();
