@@ -1,7 +1,49 @@
 <!doctype html>
 <html>
+  <head>
+    <link href="https://fonts.googleapis.com/css?family=Open+Sans:800|Raleway:100" rel="stylesheet">
+    <!-- <link rel="stylesheet" href="./assets/main.css"> -->
+
+    <script>
+      var time = 5;
+
+      var count = setInterval(function(){
+        time--;
+
+        document.getElementById('count').innerHTML = time;
+
+        if(time === -1) {
+          clearInterval(count);
+          window.close();
+        }
+      },1000);
+    </script>
+
+    <style>
+      body {
+        font-family: 'Raleway', sans-serif;
+        background-color: #373a3f;
+        text-align: center;
+        color: #cacaca;
+        padding: 10vh 30px 30px 30px;
+      }
+
+      h1 {
+        font-family: 'Open Sans', sans-serif;
+        font-weight: bold;
+        font-size: 200px;
+        line-height: 1;
+        margin: 0;
+      }
+
+      h2 {
+        font-size: 20px;
+        font-weight: 100;
+      }
+    </style>
+  </head>
   <body>
     <h1>nice.</h1>
-    <h2>(this tab will self destruct in <span id="count">5</span>)</h2>
+    <h2>this tab will self destruct in <span id="count">5</span></h2>
   </body>
 </html>
