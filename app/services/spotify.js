@@ -15,7 +15,7 @@ let scope    = encodeURIComponent('streaming user-library-read user-read-playbac
 let self = module.exports = {
   auth: (conf, callback) => {
     if (conf.spotify.code) {
-      self.getRefresh();
+      self.getRefresh(conf, callback);
     } else {
       self.getCode(conf, callback);
     }
@@ -44,12 +44,12 @@ let self = module.exports = {
   getAccess: (conf, callback) => {
     server.close(() => { process.exit() });
 
-    let auth = {
+    let options = {
       url: `${base}/api/token`,
       form: {
+        grant_type: 'authorization_code',
         code: conf.spotify.code,
-        redirect_uri: redirect,
-        grant_type: 'authorization_code'
+        redirect_uri: redirect
       },
       headers: {
         'Authorization': 'Basic ' + (new Buffer(env.CLIENT + ':' + env.SECRET).toString('base64'))
@@ -57,7 +57,7 @@ let self = module.exports = {
       json: true
     };
 
-    request.post(auth, (err, res, body) => {
+    request.post(options, (err, res, body) => {
       if (!err && res.statusCode === 200) {
         conf.spotify.access = body.access_token;
         conf.spotify.refresh = body.refresh_token;
@@ -69,7 +69,28 @@ let self = module.exports = {
       }
     });
   },
-  getRefresh: () => {
-    console.log('refresh')
+  getRefresh: (conf, callback) => {
+    let options = {
+      url: `${base}/api/token`,
+      form: {
+        refresh_token: conf.spotify.refresh,
+        grant_type: 'refresh_token'
+      },
+      headers: {
+        'Authorization': 'Basic ' + (new Buffer(env.CLIENT + ':' + env.SECRET).toString('base64'))
+      },
+      json: true
+    };
+
+    request.post(options, (err, res, body) => {
+      if (!err && res.statusCode === 200) {
+        conf.spotify.access = body.access_token;
+
+        callback(conf);
+      }
+      else {
+        console.log(err);
+      }
+    });
   }
 }
