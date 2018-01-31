@@ -1,74 +1,27 @@
-require('dotenv').config();
+require('dotenv');
 
 let fs = require('fs'),
+    core = require('./core.js'),
     blessed = require('blessed'),
     contrib = require('blessed-contrib'), // not in use yet
-    List = require('prompt-list'),
     // screen = blessed.screen(),
-    env = process.env,
-    path = './app/config/',
-    conf;
+    env = process.env;
 
-fs.readFile(path + 'conf.json', (err, content) => {
-  if (err) throw err;
-
-  conf = JSON.parse(content);
-
-  if (conf.first) {
-    setup();
-  } else {
-    run();
-  }
-});
-
-function setup() {
-  let list = new List({
-    name: 'service',
-    message: 'What service would you like to use?',
-    choices: [
-      'spotify',
-      'apple-music',
-      'google-play'
-    ]
-  });
-
-  list.ask((answer) => {
-    conf.first = false;
-    conf.preferred = answer;
-    save();
-
-    run();
-  });
+if (core.checkConfig()) {
+  core.getConfig(run)
+} else {
+  core.reset(run);
 }
 
-function run() {
-  let Module = require(`./services/${conf.preferred}.js`);
-  let Service = new Module;
+function run(conf) {
+  console.log('run:');
+  console.log(conf);
 
-  Service.auth(conf);
+  // let Module = require(`./services/${conf.preferred}.js`);
+  // let Service = new Module;
+
+  // Service.auth(conf);
 }
-
-
-function save() {
-  fs.writeFile(path + 'conf.json', JSON.stringify(conf), 'utf8', (err) => {
-    if(err) throw err;
-  });
-}
-
-function reset() {
-  fs.readFile(path + 'default.json', (err, content) => {
-    if(err) throw err;
-
-    fs.writeFile(path + 'conf.json', content, 'utf8', (err) => {
-      if(err) throw err;
-    });
-  });
-}
-
-
-
-
-
 
 // screen.title = 'title of song I guess?';
 
