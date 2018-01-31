@@ -14,13 +14,11 @@ if (core.checkConfig()) {
 }
 
 function run(conf) {
-  console.log('run:');
-  console.log(conf);
+  let service = require(`./services/${conf.preferred}.js`);
 
-  // let Module = require(`./services/${conf.preferred}.js`);
-  // let Service = new Module;
-
-  // Service.auth(conf);
+  service.auth(conf, (conf) => {
+    core.save(conf);
+  });
 }
 
 // screen.title = 'title of song I guess?';
