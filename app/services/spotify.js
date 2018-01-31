@@ -1,26 +1,27 @@
-let axios = require('axios'),
-    http = require('http'),
-    url = require('url'),
-    opn = require('opn'),
-    fs = require('fs'),
-    base = 'https://accounts.spotify.com/api',
-    env = process.env,
-    server,
-    conf;
+// requires
+let request = require('request'),
+    http  = require('http'),
+    url   = require('url'),
+    opn   = require('opn'),
+    fs    = require('fs');
 
-module.exports = class Spotify {
-  auth(config) {
-    conf = config;
+// vars
+let scope    = encodeURIComponent('streaming user-library-read user-read-playback-state user-modify-playback-state user-read-currently-playing'),
+    base     = 'https://accounts.spotify.com',
+    redirect = 'http://localhost:3102',
+    env      = process.env,
+    server;
 
+let self = module.exports = {
+  auth: (conf, callback) => {
     if (conf.spotify.code) {
-      this.getRefresh();
+      self.getRefresh();
     } else {
-      this.getCode();
+      self.getCode(conf, callback);
     }
-  }
-
-  getCode() {
-    opn('http://localhost:8080/?code=12345678');
+  },
+  getCode: (conf, callback) => {
+    opn(`${base}/authorize/?client_id=${env.CLIENT}&redirect_uri=${redirect}&scope=${scope}&response_type=code`);
 
     server = http.createServer((req, res) => {
       fs.readFile('./app/callback/callback.html', (err, data) => {
@@ -33,40 +34,42 @@ module.exports = class Spotify {
 
         if (query.code) {
           conf.spotify.code = query.code;
-          this.getAccess();
+          self.getAccess(conf, callback);
         }
 
         res.end();
       });
-    }).listen(8080);
-  }
-
-  getAccess() {
+    }).listen(3102);
+  },
+  getAccess: (conf, callback) => {
     server.close(() => { process.exit() });
 
-    axios.get(`${base}/token`, {
-      params: {
+    let auth = {
+      url: `${base}/api/token`,
+      form: {
         code: conf.spotify.code,
-        redirect_uri: env.REDIRECT,
+        redirect_uri: redirect,
         grant_type: 'authorization_code'
       },
       headers: {
-        'Authorization': 'Basic ' + (new Buffer(`${env.CLIENT}:${env.SECRET}`).toString('base64'))
+        'Authorization': 'Basic ' + (new Buffer(env.CLIENT + ':' + env.SECRET).toString('base64'))
       },
-    })
-    .then(function(res) {
-      console.log(res);
-    })
-    .catch(function(err) {
-      console.log(err);
-    })
-  }
+      json: true
+    };
 
-  getRefresh() {
+    request.post(auth, (err, res, body) => {
+      if (!err && res.statusCode === 200) {
+        conf.spotify.access = body.access_token;
+        conf.spotify.refresh = body.refresh_token;
+
+        callback(conf);
+      }
+      else {
+        console.log(err);
+      }
+    });
+  },
+  getRefresh: () => {
     console.log('refresh')
   }
-}
-
-
-function auth(code) {
 }
