@@ -18,6 +18,8 @@ function run(conf) {
 
   service.auth(conf, (conf) => {
     core.save(conf);
+    
+    service.getNowPlaying(conf);
   });
 }
 

@@ -7,12 +7,40 @@ let request = require('request'),
 
 // vars
 let scope    = encodeURIComponent('streaming user-library-read user-read-playback-state user-modify-playback-state user-read-currently-playing'),
-    base     = 'https://accounts.spotify.com',
+    auth     = 'https://accounts.spotify.com',
+    base     = 'https://api.spotify.com/v1',
     redirect = 'http://localhost:3102',
     env      = process.env,
     server;
 
 let self = module.exports = {
+  getNowPlaying: (conf) => {
+    let options = {
+      url: `${base}/me/player/currently-playing`,
+      headers: { 'Authorization': 'Bearer ' + conf.spotify.access },
+      json: true
+    };
+
+    request.get(options, (err, res, body) => {
+      switch(res.statusCode) {
+        case 200:
+          let song = {
+            status: body.is_playing ? 'playing' : 'paused',
+            title:  body.item.name,
+            album:  body.item.album.name,
+            artist: body.item.album.artists[0].name,
+          }
+
+          console.log(song);
+
+          break
+
+        case 204:
+          console.log('nothing playing');
+          break;
+      }
+    });
+  },
   auth: (conf, callback) => {
     if (conf.spotify.code) {
       self.getRefresh(conf, callback);
@@ -21,7 +49,7 @@ let self = module.exports = {
     }
   },
   getCode: (conf, callback) => {
-    opn(`${base}/authorize/?client_id=${env.CLIENT}&redirect_uri=${redirect}&scope=${scope}&response_type=code`);
+    opn(`${auth}/authorize/?client_id=${env.CLIENT}&redirect_uri=${redirect}&scope=${scope}&response_type=code`);
 
     server = http.createServer((req, res) => {
       fs.readFile('./app/callback/callback.html', (err, data) => {
@@ -45,7 +73,7 @@ let self = module.exports = {
     server.close(() => { process.exit() });
 
     let options = {
-      url: `${base}/api/token`,
+      url: `${auth}/api/token`,
       form: {
         grant_type: 'authorization_code',
         code: conf.spotify.code,
@@ -71,7 +99,7 @@ let self = module.exports = {
   },
   getRefresh: (conf, callback) => {
     let options = {
-      url: `${base}/api/token`,
+      url: `${auth}/api/token`,
       form: {
         refresh_token: conf.spotify.refresh,
         grant_type: 'refresh_token'
