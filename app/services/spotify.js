@@ -1,9 +1,11 @@
 // requires
 let request = require('request'),
-    http  = require('http'),
-    url   = require('url'),
-    opn   = require('opn'),
-    fs    = require('fs');
+    http    = require('http'),
+    url     = require('url'),
+    opn     = require('opn'),
+    progress = require('cli-progress'),
+    fs      = require('fs');
+
 
 // vars
 let scope    = encodeURIComponent('streaming user-library-read user-read-playback-state user-modify-playback-state user-read-currently-playing'),
@@ -14,7 +16,7 @@ let scope    = encodeURIComponent('streaming user-library-read user-read-playbac
     server;
 
 let self = module.exports = {
-  getNowPlaying: (conf) => {
+  getNowPlaying: (conf, callback) => {
     let options = {
       url: `${base}/me/player/currently-playing`,
       headers: { 'Authorization': 'Bearer ' + conf.spotify.access },
@@ -25,13 +27,18 @@ let self = module.exports = {
       switch(res.statusCode) {
         case 200:
           let song = {
-            status: body.is_playing ? 'playing' : 'paused',
-            title:  body.item.name,
-            album:  body.item.album.name,
-            artist: body.item.album.artists[0].name,
+            status:  body.is_playing ? 'playing' : 'paused',
+            title:   body.item.name,
+            album:   body.item.album.name,
+            artist:  body.item.album.artists[0].name,
+            artwork: body.item.album.images[0].url,
+            current: body.progress_ms,
+            length:   body.item.duration_ms,
           }
 
-          console.log(song);
+          // console.log(song);
+
+          return callback(song);
 
           break
 
@@ -75,9 +82,9 @@ let self = module.exports = {
     let options = {
       url: `${auth}/api/token`,
       form: {
-        grant_type: 'authorization_code',
-        code: conf.spotify.code,
-        redirect_uri: redirect
+        grant_type:   'authorization_code',
+        redirect_uri: redirect,
+        code:         conf.spotify.code,
       },
       headers: {
         'Authorization': 'Basic ' + (new Buffer(env.CLIENT + ':' + env.SECRET).toString('base64'))
@@ -102,7 +109,7 @@ let self = module.exports = {
       url: `${auth}/api/token`,
       form: {
         refresh_token: conf.spotify.refresh,
-        grant_type: 'refresh_token'
+        grant_type:    'refresh_token',
       },
       headers: {
         'Authorization': 'Basic ' + (new Buffer(env.CLIENT + ':' + env.SECRET).toString('base64'))
